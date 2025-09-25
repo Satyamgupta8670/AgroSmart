@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgroSmart - Smart Crop Advisory System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --primary-green: #22c55e;
+            --primary-dark-green: #16a34a;
+            --secondary-gray: #f3f4f6;
+            --text-primary: #1f2937;
+            --text-secondary: #4b5563;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--secondary-gray);
+            color: var(--text-primary);
+        }
+        .hero-card {
+            background: linear-gradient(45deg, rgba(22, 163, 74, 0.9), rgba(34, 197, 94, 0.8)), url('https://placehold.co/1200x400/a3e635/FFFFFF?text=Lush+Fields&font=inter') no-repeat center center;
+            background-size: cover;
+        }
+        .modal-backdrop {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5); z-index: 50; justify-content: center; align-items: center;
+            padding: 1rem; backdrop-filter: blur(4px);
+        }
+        .modal-content {
+            max-height: 90vh; overflow-y: auto;
+            animation: slideUp 0.3s ease-out;
+        }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .loader {
+            border: 4px solid #e5e7eb; border-top: 4px solid var(--primary-green);
+            border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite;
+        }
+        .small-loader { border-width: 2px; width: 20px; height: 20px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .mic-active { animation: pulse 1.5s infinite; }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { box-shadow: 0 0 0 20px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+        .feature-card { transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; }
+        .feature-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05); }
+        .btn-primary {
+            background-color: var(--primary-green); color: white; font-weight: 600;
+            border-radius: 0.5rem; padding: 0.75rem 1rem; text-align: center;
+            transition: background-color 0.2s;
+        }
+        .btn-primary:hover { background-color: var(--primary-dark-green); }
+        .btn-secondary {
+             background-color: #e5e7eb; color: #374151; font-weight: 600;
+             border-radius: 0.5rem; padding: 0.5rem 0.75rem;
+             transition: background-color 0.2s;
+        }
+        .btn-secondary:hover { background-color: #d1d5db; }
+        .welcome-screen {
+             animation: fadeIn 0.5s ease-out;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .tab-button.active {
+            border-bottom-color: var(--primary-green);
+            color: var(--primary-green);
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+    <!-- Welcome/Registration Screen -->
+    <div id="welcome-screen" class="welcome-screen fixed inset-0 bg-white z-[100] flex items-center justify-center p-4">
+        <div class="w-full max-w-md text-center">
+            <div class="flex items-center justify-center space-x-3 mb-8">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-600"><path d="M14.5 17.5c-1.5 1.5-3.5 2.5-5.5 2.5s-4-1-5.5-2.5c-1.5-1.5-2.5-3.5-2.5-5.5s1-4 2.5-5.5C7.5 5 9.5 4 11.5 4s4 1 5.5 2.5"/><path d="m20 6-3 3"/><path d="m22 8-3 3"/><path d="M12 2v2"/><path d="M12 18v2"/></svg>
+                <h1 class="text-4xl font-bold text-gray-800" data-translate="app_title">AgroSmart</h1>
+            </div>
+            
+            <div id="language-selection-step">
+                <h2 class="text-2xl font-semibold mb-2" data-translate="welcome_title">Welcome to AgroSmart</h2>
+                <p class="text-gray-600 mb-6" data-translate="language_select_prompt">Please select your language to get started.</p>
+                <div class="grid grid-cols-2 gap-4">
+                    <button onclick="selectLanguage('en')" class="p-4 border rounded-lg hover:bg-gray-100 font-semibold">English</button>
+                    <button onclick="selectLanguage('pa')" class="p-4 border rounded-lg hover:bg-gray-100 font-semibold">ਪੰਜਾਬੀ</button>
+                    <button onclick="selectLanguage('hi')" class="p-4 border rounded-lg hover:bg-gray-100 font-semibold">हिंदी</button>
+                    <button onclick="selectLanguage('mr')" class="p-4 border rounded-lg hover:bg-gray-100 font-semibold">मराठी</button>
+                    <button onclick="selectLanguage('te')" class="p-4 border rounded-lg hover:bg-gray-100 font-semibold">తెలుగు</button>
+                </div>
+            </div>
+
+            <div id="registration-step" class="hidden">
+                 <h2 class="text-2xl font-semibold mb-2" data-translate="registration_title">Farmer Registration</h2>
+                 <p class="text-gray-600 mb-6" data-translate="registration_prompt">Tell us a bit about yourself.</p>
+                 <div class="space-y-4 text-left">
+                     <div>
+                         <label for="farmer-name" class="block text-sm font-medium text-gray-700" data-translate="farmer_name_label">Your Name</label>
+                         <input type="text" id="farmer-name" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-green-500 focus:ring-green-500" data-translate-placeholder="farmer_name_placeholder">
+                     </div>
+                      <div>
+                         <label for="farmer-phone" class="block text-sm font-medium text-gray-700" data-translate="phone_number_label">Your Phone Number</label>
+                         <input type="tel" id="farmer-phone" pattern="[0-9]{10}" maxlength="10" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-green-500 focus:ring-green-500" data-translate-placeholder="phone_number_placeholder">
+                     </div>
+                     <div>
+                         <label for="farmer-location" class="block text-sm font-medium text-gray-700" data-translate="location_label">Your Location</label>
+                         <input type="text" id="farmer-location" value="Navi Mumbai" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-green-500 focus:ring-green-500" data-translate-placeholder="location_placeholder">
+                     </div>
+                 </div>
+                 <button id="start-farming-btn" class="mt-8 w-full btn-primary" data-translate="start_farming_btn">Start Farming</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App Container -->
+    <div id="main-app" class="hidden">
+        <div class="container mx-auto max-w-6xl p-4 sm:p-6">
+            <!-- Header -->
+            <header class="flex flex-wrap justify-between items-center mb-6 gap-4">
+                <div class="flex items-center space-x-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-600"><path d="M14.5 17.5c-1.5 1.5-3.5 2.5-5.5 2.5s-4-1-5.5-2.5c-1.5-1.5-2.5-3.5-2.5-5.5s1-4 2.5-5.5C7.5 5 9.5 4 11.5 4s4 1 5.5 2.5"/><path d="m20 6-3 3"/><path d="m22 8-3 3"/><path d="M12 2v2"/><path d="M12 18v2"/></svg>
+                    <h1 class="text-3xl font-bold text-gray-800" data-translate="app_title">AgroSmart</h1>
+                </div>
+                <div class="flex items-center space-x-4 md:space-x-6">
+                    <button id="user-profile-button" onclick="openModal('user-profile')" class="text-right p-2 rounded-lg hover:bg-gray-200">
+                         <p id="welcome-message" class="text-sm font-medium text-gray-700"></p>
+                         <p class="text-xs text-gray-500">ID: FARMER-1525010</p>
+                    </button>
+                     <div class="relative">
+                        <select id="language-switcher" class="bg-white border border-gray-300 rounded-lg py-2 pl-3 pr-8 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                            <option value="en">English</option> <option value="pa">ਪੰਜਾਬੀ</option> <option value="hi">हिंदी</option> <option value="mr">मराठी</option> <option value="te">తెలుగు</option>
+                        </select>
+                    </div>
+                    <button id="header-mic-btn" onclick="openModal('voice-assistant')" class="bg-white p-2.5 rounded-full shadow-sm hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500" data-translate-aria-label="voice_assistant_aria_label">
+                        <i data-lucide="mic" class="w-5 h-5 text-gray-600"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Main Content -->
+            <main>
+                <!-- Hero Card -->
+                <div class="hero-card text-white p-8 rounded-2xl mb-8 shadow-lg">
+                    <div class="flex justify-between items-start">
+                        <div>
+                             <h2 class="text-4xl md:text-5xl font-bold mb-3" data-translate="hero_title">Empower Your Farming with AI</h2>
+                             <p class="text-lg" data-translate="hero_subtitle">Your all-in-one smart advisory system.</p>
+                        </div>
+                        <div class="hidden sm:flex items-center space-x-2 bg-black bg-opacity-20 px-3 py-1.5 rounded-full text-sm">
+                            <i data-lucide="map-pin" class="w-4 h-4"></i>
+                            <span id="location-display" data-translate="location_navimumbai">Navi Mumbai</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Features Grid -->
+                <section>
+                    <h3 class="text-xl font-bold mb-6" data-translate="farm_management_title">Farm Management</h3>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6">
+                         <div class="feature-card bg-white p-5 rounded-2xl shadow-sm cursor-pointer text-center" onclick="openModal('soil-advisory')">
+                            <div class="bg-green-100 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center"><i data-lucide="sprout" class="w-8 h-8 text-green-600"></i></div>
+                            <h3 class="font-semibold text-md" data-translate="soil_advisory_title">Crop Advisory</h3>
+                        </div>
+                         <div class="feature-card bg-white p-5 rounded-2xl shadow-sm cursor-pointer text-center" onclick="openModal('weather-alert')">
+                            <div class="bg-orange-100 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center"><i data-lucide="cloud-sun-rain" class="w-8 h-8 text-orange-600"></i></div>
+                            <h3 class="font-semibold text-md" data-translate="weather_alert_title">Weather Alerts</h3>
+                        </div>
+                        <div class="feature-card bg-white p-5 rounded-2xl shadow-sm cursor-pointer text-center" onclick="openModal('crop-timeline')">
+                            <div class="bg-blue-100 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center"><i data-lucide="calendar-days" class="w-8 h-8 text-blue-600"></i></div>
+                            <h3 class="font-semibold text-md" data-translate="crop_timeline_title">Crop Timeline</h3>
+                        </div>
+                        <div class="feature-card bg-white p-5 rounded-2xl shadow-sm cursor-pointer text-center" onclick="openModal('pest-detection')">
+                            <div class="bg-red-100 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center"><i data-lucide="bug" class="w-8 h-8 text-red-600"></i></div>
+                            <h3 class="font-semibold text-md" data-translate="pest_detection_title">Pest Detection</h3>
+                        </div>
+                         <div class="feature-card bg-white p-5 rounded-2xl shadow-sm cursor-pointer text-center" onclick="openModal('field-monitoring')">
+                            <div class="bg-cyan-100 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center"><i data-lucide="satellite" class="w-8 h-8 text-cyan-600"></i></div>
+                            <h3 class="font-semibold text-md" data-translate="field_monitoring_title">Field Monitoring</h3>
+                        </div>
+                    </div>
+                </section>
+                
+                <section class="mt-10">
+                     <h3 class="text-xl font-bold mb-6" data-translate="market_services_title">Market & Services</h3>
+                     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6">
+                        <div class="feature-card bg-white p-5 rounded-2xl shadow-sm cursor-pointer text-center" onclick="openModal('market-prices')">
+                            <div class="bg-yellow-100 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center"><i data-lucide="trending-up" class="w-8 h-8 text-yellow-600"></i></div>
+                            <h3 class="font-semibold text-md" data-translate="market_prices_title">Market Prices</h3>
+                        </div>
+                        <div class="feature-card bg-white p-5 rounded-2xl shadow-sm cursor-pointer text-center" onclick="openModal('marketplace')">
+                            <div class="bg-lime-100 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center"><i data-lucide="shopping-cart" class="w-8 h-8 text-lime-600"></i></div>
+                            <h3 class="font-semibold text-md" data-translate="marketplace_title">Marketplace</h3>
+                        </div>
+                        <div class="feature-card bg-white p-5 rounded-2xl shadow-sm cursor-pointer text-center" onclick="openModal('gov-schemes')">
+                            <div class="bg-indigo-100 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center"><i data-lucide="landmark" class="w-8 h-8 text-indigo-600"></i></div>
+                            <h3 class="font-semibold text-md" data-translate="gov_schemes_title">Govt. Schemes</h3>
+                        </div>
+                        <div class="feature-card bg-white p-5 rounded-2xl shadow-sm cursor-pointer text-center" onclick="openModal('sms-alerts')">
+                            <div class="bg-teal-100 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center"><i data-lucide="message-circle" class="w-8 h-8 text-teal-600"></i></div>
+                            <h3 class="font-semibold text-md" data-translate="sms_alerts_title">SMS Alerts</h3>
+                        </div>
+                     </div>
+                </section>
+
+                <section class="mt-10">
+                     <h3 class="text-xl font-bold mb-6" data-translate="knowledge_community_title">Knowledge & Community</h3>
+                     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6">
+                        <div class="feature-card bg-white p-5 rounded-2xl shadow-sm cursor-pointer text-center" onclick="openModal('community-forum')">
+                            <div class="bg-pink-100 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center"><i data-lucide="users" class="w-8 h-8 text-pink-600"></i></div>
+                            <h3 class="font-semibold text-md" data-translate="community_forum_title">Community Forum</h3>
+                        </div>
+                        <div class="feature-card bg-white p-5 rounded-2xl shadow-sm cursor-pointer text-center" onclick="openModal('feedback')">
+                            <div class="bg-gray-200 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center"><i data-lucide="message-square-plus" class="w-8 h-8 text-gray-600"></i></div>
+                            <h3 class="font-semibold text-md" data-translate="feedback_title">Feedback</h3>
+                        </div>
+                     </div>
+                </section>
+            </main>
+            <footer class="text-center mt-12 text-sm text-gray-500">
+                <p>&copy; 2025 AgroSmart by Team Error 404</p>
+                <p class="mt-1" data-translate="offline_note">Designed with Offline-First capability for low-connectivity areas.</p>
+            </footer>
+        </div>
+    </div>
+
+
+    <!-- Modals -->
+    <div id="user-profile-modal" class="modal-backdrop"><div class="modal-content bg-white w-11/12 max-w-sm p-6 sm:p-8 rounded-2xl shadow-2xl relative"><button onclick="closeModal('user-profile')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700"><i data-lucide="x"></i></button><h3 class="text-2xl font-bold mb-6 text-center" data-translate="profile_title">Farmer Profile</h3><div class="space-y-4"><div class="flex items-center"><i data-lucide="user" class="w-5 h-5 mr-3 text-gray-400"></i><div><p class="text-xs text-gray-500" data-translate="farmer_name_label">Name</p><p id="profile-name" class="font-semibold"></p></div></div><div class="flex items-center"><i data-lucide="phone" class="w-5 h-5 mr-3 text-gray-400"></i><div><p class="text-xs text-gray-500" data-translate="phone_number_label">Phone</p><p id="profile-phone" class="font-semibold"></p></div></div><div class="flex items-center"><i data-lucide="map-pin" class="w-5 h-5 mr-3 text-gray-400"></i><div><p class="text-xs text-gray-500" data-translate="location_label">Location</p><p id="profile-location" class="font-semibold"></p></div></div><div class="flex items-center"><i data-lucide="hash" class="w-5 h-5 mr-3 text-gray-400"></i><div><p class="text-xs text-gray-500" data-translate="farmer_id_label">Farmer ID</p><p class="font-semibold">FARMER-1525010</p></div></div></div><button id="logout-btn" class="w-full btn-secondary mt-8 bg-red-100 text-red-700 hover:bg-red-200" data-translate="logout_btn">Log Out</button></div></div>
+    <div id="soil-advisory-modal" class="modal-backdrop"><div class="modal-content bg-white w-11/12 max-w-lg p-6 sm:p-8 rounded-2xl shadow-2xl relative"><button onclick="closeModal('soil-advisory')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700"><i data-lucide="x"></i></button><h3 class="text-2xl font-bold mb-6 text-center" data-translate="soil_advisory_modal_title">Soil Analysis & Crop Advisory</h3><div class="space-y-5"><div><h4 class="text-md font-semibold text-gray-800 mb-2" data-translate="upload_lab_report">Upload Soil Lab Report</h4><p class="text-sm text-gray-500 mb-3" data-translate="upload_lab_report_desc">AI will automatically fill the values from your PDF/image.</p><div class="flex items-center space-x-3"><input id="lab-report-input" type="file" accept=".pdf,.png,.jpg,.jpeg" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 cursor-pointer"/><div id="report-loader" class="loader small-loader hidden"></div></div></div><div class="relative flex py-2 items-center"><div class="flex-grow border-t border-gray-200"></div><span class="flex-shrink mx-4 text-gray-500 text-sm font-medium" data-translate="or">OR</span><div class="flex-grow border-t border-gray-200"></div></div><div><h4 class="text-md font-semibold text-gray-800 mb-3" data-translate="enter_soil_data">Enter Soil Data Manually</h4><div class="grid grid-cols-3 gap-4"><input id="n-value" type="number" placeholder="N" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-green-500 focus:ring-green-500 text-center"><input id="p-value" type="number" placeholder="P" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-green-500 focus:ring-green-500 text-center"><input id="k-value" type="number" placeholder="K" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-green-500 focus:ring-green-500 text-center"></div> <p class="text-xs text-gray-400 mt-2 text-center" data-translate="units_kg_ha">units in kg/ha</p></div></div><button id="get-recommendation-btn" class="mt-8 w-full btn-primary" data-translate="get_recommendation">Get Crop Recommendation</button></div></div>
+    <div id="field-monitoring-modal" class="modal-backdrop"><div class="modal-content bg-white w-11/12 max-w-lg p-6 sm:p-8 rounded-2xl shadow-2xl relative"><button onclick="closeModal('field-monitoring')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700"><i data-lucide="x"></i></button><h3 class="text-2xl font-bold mb-2 text-center" data-translate="field_monitoring_title">Field Monitoring</h3><p class="text-sm text-gray-500 mb-6 text-center" data-translate="field_monitoring_loc">Last updated: Sep 25, 2025</p><div class="space-y-5"><div class="bg-cyan-50 border-l-4 border-cyan-500 p-4 rounded-lg"><div class="flex items-center"><div class="flex-shrink-0"><i data-lucide="sparkles" class="h-6 w-6 text-cyan-600"></i></div><div class="ml-4"><h4 class="text-md font-semibold text-cyan-800" data-translate="ai_summary_title">AI Summary</h4><p id="ai-summary-text" class="text-sm text-cyan-700 mt-1" data-translate="generating_summary">Generating summary...</p></div></div></div><div class="grid grid-cols-2 gap-4 text-center"><div class="bg-gray-100 p-4 rounded-xl"><p class="text-sm font-medium text-gray-500" data-translate="weather_title">Weather</p><div class="flex items-center justify-center mt-2"><i data-lucide="sun" class="h-8 w-8 text-yellow-500 mr-2"></i><p class="text-3xl font-bold">28°C</p></div><p class="text-sm text-gray-600" data-translate="weather_condition">Clear</p></div><div class="bg-gray-100 p-4 rounded-xl"><p class="text-sm font-medium text-gray-500" data-translate="soil_moisture_title">Soil Moisture</p><p class="text-4xl font-bold text-blue-600 mt-2">65%</p><p class="text-sm text-gray-600" data-translate="soil_moisture_status">Optimal</p></div></div><div class="bg-gray-100 p-4 rounded-xl"><p class="text-sm font-medium text-gray-500 text-center" data-translate="crop_health_title">Crop Health (Satellite)</p><div class="w-full bg-gray-300 rounded-full h-3 mt-3"><div class="bg-green-600 h-3 rounded-full" style="width: 92%"></div></div><p class="text-sm text-gray-600 text-center mt-2 font-semibold" data-translate="crop_health_status">Excellent (92%)</p></div></div></div></div>
+    <div id="pest-detection-modal" class="modal-backdrop"><div class="modal-content bg-white w-11/12 max-w-lg p-6 sm:p-8 rounded-2xl shadow-2xl relative"><button onclick="closeModal('pest-detection')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700"><i data-lucide="x"></i></button><h3 class="text-2xl font-bold mb-6 text-center" data-translate="pest_detection_title">Pest Detection</h3><p class="text-sm text-center text-gray-500 mb-6" data-translate="pest_modal_desc">Upload an image of the affected crop leaf to detect diseases.</p><div><label for="leaf-image-input" class="block text-md font-semibold text-gray-800 mb-3" data-translate="upload_leaf_image">Upload Leaf Image</label><input id="leaf-image-input" type="file" accept="image/*" class="block w-full text-sm text-gray-500 file:mr-4 file:py-3 file:px-5 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-red-700 hover:file:bg-red-100 cursor-pointer"/></div><button id="analyze-image-btn" class="mt-8 w-full btn-primary bg-red-600 hover:bg-red-700" data-translate="analyze_image">Analyze Image</button></div></div>
+    <div id="crop-timeline-modal" class="modal-backdrop"><div class="modal-content bg-white w-11/12 max-w-lg p-6 sm:p-8 rounded-2xl shadow-2xl relative"><button onclick="closeModal('crop-timeline')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700"><i data-lucide="x"></i></button><h3 class="text-2xl font-bold mb-6 text-center" data-translate="crop_timeline_title">Crop Timeline / Schedule</h3><p class="text-sm text-center text-gray-500 mb-6" data-translate="scheduling_modal_desc">Here is a sample schedule for Wheat farming.</p><ul class="space-y-4 text-sm"><li class="flex items-start"><span class="bg-blue-500 w-2.5 h-2.5 rounded-full mt-1.5 mr-4 flex-shrink-0"></span><div><strong data-translate="task_sowing">Sowing:</strong> <span data-translate="date_sowing">Oct 15 - Nov 15</span></div></li><li class="flex items-start"><span class="bg-green-500 w-2.5 h-2.5 rounded-full mt-1.5 mr-4 flex-shrink-0"></span><div><strong data-translate="task_fertilizer">First Fertilization:</strong> <span data-translate="date_fertilizer">25 days after sowing</span></div></li><li class="flex items-start"><span class="bg-cyan-500 w-2.5 h-2.5 rounded-full mt-1.5 mr-4 flex-shrink-0"></span><div><strong data-translate="task_irrigation">First Irrigation:</strong> <span data-translate="date_irrigation">21 days after sowing</span></div></li><li class="flex items-start"><span class="bg-yellow-500 w-2.5 h-2.5 rounded-full mt-1.5 mr-4 flex-shrink-0"></span><div><strong data-translate="task_harvesting">Harvesting:</strong> <span data-translate="date_harvesting">Mar 15 - Apr 15</span></div></li></ul></div></div>
+    <div id="voice-assistant-modal" class="modal-backdrop"><div class="modal-content bg-white w-11/12 max-w-lg p-8 rounded-2xl shadow-2xl relative text-center"><button onclick="closeModal('voice-assistant')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700"><i data-lucide="x"></i></button><h3 class="text-2xl font-bold mb-4" data-translate="voice_assistant_title">Voice Assistant</h3><p id="voice-status" class="text-md text-gray-500 mb-8" data-translate="voice_modal_desc">Tap the mic and ask your question.</p><div id="mic-btn" class="bg-green-500 w-28 h-28 rounded-full mx-auto flex items-center justify-center cursor-pointer hover:bg-green-600 shadow-lg transition-colors"><i data-lucide="mic" class="text-white w-14 h-14"></i></div><p id="voice-example-text" class="mt-8 text-sm text-gray-500 italic" data-translate="voice_example">e.g., "What is the market price of wheat today?"</p></div></div>
+    <div id="market-prices-modal" class="modal-backdrop"><div class="modal-content bg-white w-11/12 max-w-lg p-6 sm:p-8 rounded-2xl shadow-2xl relative"><button onclick="closeModal('market-prices')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700"><i data-lucide="x"></i></button><h3 class="text-2xl font-bold mb-6 text-center" data-translate="market_prices_title">Market Price Tracking</h3><div class="mb-6"><div class="border-b border-gray-200"><nav class="-mb-px flex space-x-6 justify-center" aria-label="Tabs"><button class="tab-button whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm active" data-translate="mandi_navimumbai">Navi Mumbai</button><button class="tab-button whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300" data-translate="mandi_pune">Pune</button><button class="tab-button whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300" data-translate="mandi_nagpur">Nagpur</button></nav></div></div><div class="space-y-4"><div class="flex justify-between items-center bg-gray-100 p-4 rounded-lg"><span class="font-semibold" data-translate="crop_wheat">Wheat</span><span class="font-semibold">₹2,125 / Q <i data-lucide="arrow-up-right" class="inline w-4 h-4 text-green-600"></i></span></div><div class="flex justify-between items-center bg-gray-100 p-4 rounded-lg"><span class="font-semibold" data-translate="crop_rice">Rice</span><span class="font-semibold">₹3,500 / Q <i data-lucide="arrow-down-right" class="inline w-4 h-4 text-red-600"></i></span></div><div class="flex justify-between items-center bg-gray-100 p-4 rounded-lg"><span class="font-semibold" data-translate="crop_cotton">Cotton</span><span class="font-semibold">₹7,800 / Q <i data-lucide="arrow-up-right" class="inline w-4 h-4 text-green-600"></i></span></div></div></div></div>
+    <div id="gov-schemes-modal" class="modal-backdrop"><div class="modal-content bg-white w-11/12 max-w-lg p-6 sm:p-8 rounded-2xl shadow-2xl relative"><button onclick="closeModal('gov-schemes')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700"><i data-lucide="x"></i></button><h3 class="text-2xl font-bold mb-6 text-center" data-translate="gov_schemes_title">Government Schemes</h3><div class="space-y-4"><div class="border border-gray-200 p-4 rounded-lg"><div class="flex justify-between items-center"><h4 class="font-semibold" data-translate="scheme1_title">PM Kisan Samman Nidhi</h4><button onclick="showSchemeTutorial(1)" class="btn-secondary text-xs" data-translate="how_to_apply_btn">How to Apply</button></div><p class="text-sm text-gray-600 mt-1" data-translate="scheme1_desc">₹6,000/year support for small farmers.</p></div><div class="border border-gray-200 p-4 rounded-lg"><div class="flex justify-between items-center"><h4 class="font-semibold" data-translate="scheme2_title">Pradhan Mantri Fasal Bima Yojana</h4><button onclick="showSchemeTutorial(2)" class="btn-secondary text-xs" data-translate="how_to_apply_btn">How to Apply</button></div><p class="text-sm text-gray-600 mt-1" data-translate="scheme2_desc">Insurance cover for crop failure.</p></div></div></div></div>
+    <div id="feedback-modal" class="modal-backdrop"><div class="modal-content bg-white w-11/12 max-w-lg p-6 sm:p-8 rounded-2xl shadow-2xl relative"><button onclick="closeModal('feedback')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700"><i data-lucide="x"></i></button><h3 class="text-2xl font-bold mb-6 text-center" data-translate="feedback_title">Submit Feedback</h3><textarea id="feedback-text" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-green-500 focus:ring-green-500" rows="5" data-translate-placeholder="feedback_placeholder"></textarea><button id="submit-feedback-btn" class="mt-6 w-full btn-primary" data-translate="submit_feedback">Submit Feedback</button></div></div>
+    <div id="weather-alert-modal" class="modal-backdrop"><div class="modal-content bg-white w-11/12 max-w-lg p-6 sm:p-8 rounded-2xl shadow-2xl relative"><button onclick="closeModal('weather-alert')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700"><i data-lucide="x"></i></button><h3 class="text-2xl font-bold mb-6 text-center" data-translate="weather_alert_title">Weather Alerts</h3><div class="space-y-4"><div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg"><h4 class="font-semibold text-red-800" data-translate="alert1_title">Heavy Rain Warning</h4><p class="text-sm text-red-700 mt-1" data-translate="alert1_desc">Heavy rainfall expected in the next 48 hours. Consider postponing irrigation.</p></div><div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-r-lg"><h4 class="font-semibold text-yellow-800" data-translate="alert2_title">High Heat Advisory</h4><p class="text-sm text-yellow-700 mt-1" data-translate="alert2_desc">Temperatures may exceed 35°C. Ensure crops have adequate moisture.</p></div></div></div></div>
+    <div id="sms-alerts-modal" class="modal-backdrop"><div class="modal-content bg-white w-11/12 max-w-lg p-6 sm:p-8 rounded-2xl shadow-2xl relative"><button onclick="closeModal('sms-alerts')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700"><i data-lucide="x"></i></button><h3 class="text-2xl font-bold mb-6 text-center" data-translate="sms_alerts_title">Subscribe to SMS Alerts</h3><p class="text-sm text-center text-gray-500 mb-6" data-translate="sms_alerts_desc">Get critical alerts on your mobile, even without internet.</p><input id="phone-number-input" type="tel" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-green-500 focus:ring-green-500" data-translate-placeholder="phone_placeholder"><div id="sms-success-message" class="hidden mt-4 text-center text-green-600 font-semibold" data-translate="sms_success">Subscribed successfully!</div><button id="subscribe-sms-btn" class="mt-6 w-full btn-primary" data-translate="subscribe_btn">Subscribe</button></div></div>
+    <div id="marketplace-modal" class="modal-backdrop"><div class="modal-content bg-white w-11/12 max-w-2xl p-6 sm:p-8 rounded-2xl shadow-2xl relative"><button onclick="closeModal('marketplace')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700"><i data-lucide="x"></i></button><h3 class="text-2xl font-bold mb-6 text-center" data-translate="marketplace_title">Agri-Marketplace</h3><div class="space-y-6"><div><h4 class="font-semibold mb-3 text-lg" data-translate="sell_produce_title">Sell Your Produce</h4><div class="grid grid-cols-1 sm:grid-cols-3 gap-4"><input type="text" class="border-gray-300 rounded-lg" data-translate-placeholder="crop_name_placeholder"><input type="number" class="border-gray-300 rounded-lg" data-translate-placeholder="quantity_placeholder"><button class="btn-primary" data-translate="list_produce_btn">List Produce</button></div></div><div><h4 class="font-semibold mb-3 text-lg" data-translate="buy_produce_title">Buy from Farmers</h4><div class="space-y-3"><div class="bg-gray-50 p-3 rounded-lg flex justify-between items-center"><div><p class="font-medium" data-translate="crop_wheat">Wheat</p><p class="text-sm text-gray-500">Seller: Sunil Jadhav</p></div><span class="font-semibold text-green-700">₹2,100 / Q</span></div><div class="bg-gray-50 p-3 rounded-lg flex justify-between items-center"><div><p class="font-medium" data-translate="crop_cotton">Cotton</p><p class="text-sm text-gray-500">Seller: Priya Singh</p></div><span class="font-semibold text-green-700">₹7,750 / Q</span></div></div></div></div></div></div>
+    <div id="community-forum-modal" class="modal-backdrop"><div class="modal-content bg-white w-11/12 max-w-2xl p-6 sm:p-8 rounded-2xl shadow-2xl relative"><button onclick="closeModal('community-forum')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700"><i data-lucide="x"></i></button><h3 class="text-2xl font-bold mb-6 text-center" data-translate="community_forum_title">Community Forum (Krishi Charcha)</h3><div class="space-y-4"><div class="border p-4 rounded-lg"><p class="font-semibold" data-translate="forum_q1">"What is the best way to handle yellow rust on my wheat crop?"</p><p class="text-sm text-gray-600 mt-2" data-translate="forum_a1">- Farmer Ramesh: "I used a Propiconazole-based spray and it worked well. Make sure to spray in the evening."</p></div><div class="border p-4 rounded-lg"><p class="font-semibold" data-translate="forum_q2">"Mandi prices for tomatoes are very low. Should I wait to sell?"</p><p class="text-sm text-gray-600 mt-2" data-translate="forum_a2">- Farmer Anita: "Prices are expected to rise next week due to the upcoming festival. If you can store them, it might be worth waiting."</p></div></div><button class="w-full btn-primary mt-6" data-translate="ask_question_btn">Ask a New Question</button></div></div>
+    <div id="ai-result-modal" class="modal-backdrop"><div class="modal-content bg-white w-11/12 max-w-lg p-6 sm:p-8 rounded-2xl shadow-2xl relative"><button onclick="closeModal('ai-result')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700"><i data-lucide="x"></i></button><div id="ai-result-content" class="space-y-4"><div id="loader" class="mx-auto loader hidden"></div><div id="result-text" class="text-md text-gray-700 leading-relaxed whitespace-pre-wrap"></div></div></div></div>
+
+    <script>
+        // --- Full translations object for reference (abbreviated in prompt for brevity) ---
+        const translations = {
+            en: {
+                app_title: "AgroSmart", welcome_title: "Welcome to AgroSmart", language_select_prompt: "Please select your language to get started.",
+                registration_title: "Farmer Registration", registration_prompt: "Tell us a bit about yourself.", 
+                farmer_name_label: "Name", farmer_name_placeholder: "e.g., Harsh Jha",
+                phone_number_label: "Phone", phone_number_placeholder: "e.g., 9876543210",
+                location_label: "Location", location_placeholder: "e.g., Panjab", start_farming_btn: "Start Farming",
+                hero_title: "Empower Your Farming with AI", hero_subtitle: "Your all-in-one smart advisory system.",
+                welcome_farmer: "Welcome, {name}!", location_navimumbai: "Navi Mumbai",
+                farm_management_title: "Farm Management", market_services_title: "Market & Services", knowledge_community_title: "Knowledge & Community",
+                soil_advisory_title: "Crop Advisory", soil_advisory_modal_title: "Soil Analysis & Crop Advisory",
+                field_monitoring_title: "Field Monitoring", pest_detection_title: "Pest Detection", crop_timeline_title: "Crop Timeline", voice_assistant_aria_label: "Open Voice Assistant", 
+                market_prices_title: "Market Prices", gov_schemes_title: "Govt. Schemes", feedback_title: "Feedback", weather_alert_title: "Weather Alerts", sms_alerts_title: "SMS Alerts",
+                marketplace_title: "Marketplace", community_forum_title: "Community Forum", profile_title: "Farmer Profile", farmer_id_label: "Farmer ID", logout_btn: "Log Out",
+                upload_lab_report: "Upload Soil Lab Report", upload_lab_report_desc: "AI will automatically fill the values from your PDF/image.",
+                or: "OR", enter_soil_data: "Enter Soil Data Manually", units_kg_ha: "units in kg/ha", get_recommendation: "Get Crop Recommendation",
+                field_monitoring_loc: "Last updated: Sep 25, 2025", ai_summary_title: "AI Summary", generating_summary: "Generating summary...",
+                weather_title: "Weather", weather_condition: "Clear", soil_moisture_title: "Soil Moisture", soil_moisture_status: "Optimal",
+                crop_health_title: "Crop Health (Satellite)", crop_health_status: "Excellent (92%)",
+                scheduling_modal_desc: "Here is a sample schedule for Wheat farming.", task_sowing: "Sowing", date_sowing: "Oct 15 - Nov 15", task_fertilizer: "First Fertilization", date_fertilizer: "25 days after sowing", task_irrigation: "First Irrigation", date_irrigation: "21 days after sowing", task_harvesting: "Harvesting", date_harvesting: "Mar 15 - Apr 15",
+                pest_modal_desc: "Upload an image of the affected crop leaf to detect diseases.", upload_leaf_image: "Upload Leaf Image", analyze_image: "Analyze Image",
+                voice_modal_desc: "Tap the mic and ask your question.", voice_example: `e.g., "What is the market price of wheat today?"`, voice_listening: "Listening...",
+                market_modal_desc: "Forecasted prices for major crops in your region.", mandi_navimumbai: "Navi Mumbai", mandi_pune: "Pune", mandi_nagpur: "Nagpur", crop_wheat: "Wheat", crop_rice: "Rice", crop_cotton: "Cotton",
+                scheme1_title: "PM Kisan Samman Nidhi", scheme1_desc: "₹6,000/year support for small farmers.", scheme2_title: "Pradhan Mantri Fasal Bima Yojana", scheme2_desc: "Insurance cover for crop failure.", how_to_apply_btn: "How to Apply",
+                scheme1_tutorial_title: "How to Apply for PM Kisan", scheme1_tutorial_steps: "1. Visit the official PM Kisan website.\n2. Click on 'New Farmer Registration'.\n3. Fill in your Aadhaar details and captcha.\n4. Complete the application form and submit.",
+                scheme2_tutorial_title: "How to Apply for Fasal Bima", scheme2_tutorial_steps: "1. Visit the National Crop Insurance Portal.\n2. Select 'Farmer Application' and create an account.\n3. Fill the form with your crop and bank details.\n4. Upload necessary documents and pay the premium.",
+                feedback_placeholder: "Enter your feedback or report an issue here...", submit_feedback: "Submit Feedback",
+                alert1_title: "Heavy Rain Warning", alert1_desc: "Heavy rainfall expected in the next 48 hours. Consider postponing irrigation.", alert2_title: "High Heat Advisory", alert2_desc: "Temperatures may exceed 35°C. Ensure crops have adequate moisture.",
+                sms_alerts_desc: "Get critical alerts on your mobile, even without internet.", phone_placeholder: "Enter your 10-digit phone number", subscribe_btn: "Subscribe", sms_success: "Subscribed successfully!",
+                offline_note: "Designed with Offline-First capability for low-connectivity areas.",
+                sell_produce_title: "Sell Your Produce", buy_produce_title: "Buy from Farmers", crop_name_placeholder: "Crop Name", quantity_placeholder: "Quantity (in Quintals)", list_produce_btn: "List Produce",
+                community_forum_title: "Community Forum (Krishi Charcha)", forum_q1: `"What is the best way to handle yellow rust on my wheat crop?"`, forum_a1: `- Farmer Ramesh: "I used a Propiconazole-based spray and it worked well. Make sure to spray in the evening."`, forum_q2: `"Mandi prices for tomatoes are very low. Should I wait to sell?"`, forum_a2: `- Farmer Anita: "Prices are expected to rise next week due to the upcoming festival. If you can store them, it might be worth waiting."`, ask_question_btn: "Ask a New Question",
+                error_api: "Sorry, couldn't get a response. Please try again.", error_input: "Please enter all N, P, and K values.", error_file: "Please select a file to analyze.",
+                error_report_parse: "Could not read values from the report. Please enter them manually.", error_voice: "Sorry, I didn't catch that. Please repeat.", error_voice_support: "Voice recognition is not supported by your browser."
+            },
+            // ... other languages ...
+        };
+
+        const languageMetadata = { en: { name: 'English', code: 'en-US' }, pa: { name: 'Punjabi', code: 'pa-IN' }, hi: { name: 'Hindi', code: 'hi-IN' }, mr: { name: 'Marathi', code: 'mr-IN' }, te: { name: 'Telugu', code: 'te-IN' } };
+        let currentLanguage = 'en';
+        let currentUser = {};
+
+        // IMPORTANT: Replace this with your own key when running in VS Code
+        const apiKey = "AIzaSyBpXFr0L1cStGeYtUOalz8NLa4ca0A1UAY"; 
+
+        const $ = (selector) => document.querySelector(selector);
+        const $$ = (selector) => document.querySelectorAll(selector);
+
+        function setLanguage(lang, isInitial = false) {
+            currentLanguage = lang;
+            document.documentElement.lang = lang;
+            $$('[data-translate]').forEach(el => {
+                const key = el.getAttribute('data-translate');
+                let translation = translations[lang]?.[key] || translations['en'][key];
+                if (translation && translation.includes('{name}')) {
+                     translation = translation.replace('{name}', currentUser.name || 'Farmer');
+                }
+                if (translation) el.textContent = translation;
+            });
+             $$('[data-translate-placeholder]').forEach(el => {
+                 const key = el.getAttribute('data-translate-placeholder');
+                 const translation = translations[lang]?.[key] || translations['en'][key];
+                 if (translation) el.placeholder = translation;
+            });
+             $$('[data-translate-aria-label]').forEach(el => {
+                 const key = el.getAttribute('data-translate-aria-label');
+                 const translation = translations[lang]?.[key] || translations['en'][key];
+                 if (translation) el.setAttribute('aria-label', translation);
+            });
+             if (!isInitial) {
+                $('#language-switcher').value = lang;
+            }
+        }
+
+        function openModal(modalId) {
+            const modal = $(`#${modalId}-modal`);
+            if (modal) {
+                 modal.style.display = 'flex';
+                 if (modalId === 'user-profile') {
+                     $('#profile-name').textContent = currentUser.name;
+                     $('#profile-phone').textContent = currentUser.phone;
+                     $('#profile-location').textContent = currentUser.location;
+                 }
+            }
+        }
+
+        function closeModal(modalId) {
+             const modal = $(`#${modalId}-modal`);
+             if (modal) modal.style.display = 'none';
+        }
+
+        function showResult(content, title = "") {
+            $('#loader').classList.add('hidden');
+            let htmlContent = title ? `<h3 class="text-xl font-bold mb-4">${title}</h3>` : '';
+            htmlContent += content.replace(/\n/g, '<br>');
+            $('#result-text').innerHTML = htmlContent;
+            openModal('ai-result');
+        }
+        
+        function selectLanguage(lang) {
+            setLanguage(lang, true);
+            $('#language-selection-step').classList.add('hidden');
+            $('#registration-step').classList.remove('hidden');
+        }
+
+        $('#start-farming-btn').addEventListener('click', () => {
+            const farmerName = $('#farmer-name').value.trim();
+            const farmerPhone = $('#farmer-phone').value.trim();
+            const farmerLocation = $('#farmer-location').value.trim();
+            
+            if (!farmerName || !farmerLocation) {
+                alert("Please fill in your name and location."); return;
+            }
+            if (!/^\d{10}$/.test(farmerPhone)) {
+                 alert("Please enter a valid 10-digit phone number."); return;
+            }
+            
+            currentUser = { name: farmerName, phone: farmerPhone, location: farmerLocation };
+
+            $('#welcome-screen').style.display = 'none';
+            $('#main-app').classList.remove('hidden');
+            lucide.createIcons();
+            
+            setLanguage(currentLanguage);
+            $('#location-display').textContent = farmerLocation;
+        });
+
+        $('#logout-btn').addEventListener('click', () => {
+            closeModal('user-profile');
+            $('#main-app').classList.add('hidden');
+            $('#welcome-screen').style.display = 'flex';
+            $('#language-selection-step').classList.remove('hidden');
+            $('#registration-step').classList.add('hidden');
+            $('#farmer-name').value = '';
+            $('#farmer-phone').value = '';
+            $('#farmer-location').value = 'Navi Mumbai';
+            currentUser = {};
+        });
+
+        $('#language-switcher').addEventListener('change', (event) => setLanguage(event.target.value));
+        
+        document.addEventListener('DOMContentLoaded', () => { 
+            setLanguage('en', true);
+             for(let lang in translations){
+                 if (lang !== 'en') {
+                    for(let key in translations.en){
+                        if(!translations[lang][key]){
+                            translations[lang][key] = translations.en[key];
+                        }
+                    }
+                 }
+             }
+        });
+
+        function showSchemeTutorial(schemeId) {
+            const titleKey = `scheme${schemeId}_tutorial_title`;
+            const stepsKey = `scheme${schemeId}_tutorial_steps`;
+            const title = translations[currentLanguage][titleKey];
+            const steps = translations[currentLanguage][stepsKey];
+            closeModal('gov-schemes');
+            showResult(steps, title);
+        }
+    </script>
+</body>
+</html>
+
